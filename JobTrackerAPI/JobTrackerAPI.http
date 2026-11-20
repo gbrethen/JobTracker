@@ -1,0 +1,92 @@
+@JobTrackerAPI_HostAddress = http://localhost:5151
+
+### 0. Swagger OpenAPI JSON Specification
+GET {{JobTrackerAPI_HostAddress}}/swagger/v1/swagger.json
+Accept: application/json
+
+### 1. Get All Job Types
+GET {{JobTrackerAPI_HostAddress}}/api/jobtypes
+Accept: application/json
+
+### 2. Get All Job Locations
+GET {{JobTrackerAPI_HostAddress}}/api/joblocations
+Accept: application/json
+
+### 3. Create a New Job Application
+POST {{JobTrackerAPI_HostAddress}}/api/jobs
+Content-Type: application/json
+
+{
+  "company": "Contoso Tech",
+  "jobTitle": "Senior .NET Developer",
+  "jobTypeId": 1,
+  "jobLocationId": 3,
+  "physicalLocation": "Austin, TX",
+  "applicationDate": "2026-11-19",
+  "status": "Applied",
+  "salaryRange": "$140,000 - $160,000",
+  "jobUrl": "https://example.com/careers/senior-dotnet-dev",
+  "contactPerson": "Jane Recruiter",
+  "contactEmail": "jane@contoso.com",
+  "initialNote": "Applied through LinkedIn; referral submitted by John."
+}
+
+### 4. Get All Jobs (with optional filter query)
+GET {{JobTrackerAPI_HostAddress}}/api/jobs?status=Applied&jobLocationId=3
+Accept: application/json
+
+### 5. Get Job By ID (includes notes)
+GET {{JobTrackerAPI_HostAddress}}/api/jobs/1
+Accept: application/json
+
+### 6. Update Job Details
+PUT {{JobTrackerAPI_HostAddress}}/api/jobs/1
+Content-Type: application/json
+
+{
+  "company": "Contoso Tech",
+  "jobTitle": "Lead .NET Developer",
+  "jobTypeId": 1,
+  "jobLocationId": 3,
+  "physicalLocation": "Austin, TX",
+  "applicationDate": "2026-11-19",
+  "status": "Interviewing",
+  "salaryRange": "$150,000 - $170,000",
+  "jobUrl": "https://example.com/careers/senior-dotnet-dev",
+  "contactPerson": "Jane Recruiter",
+  "contactEmail": "jane@contoso.com"
+}
+
+### 7. Patch Job Status Only
+PATCH {{JobTrackerAPI_HostAddress}}/api/jobs/1/status
+Content-Type: application/json
+
+{
+  "status": "Interviewing"
+}
+
+### 8. Add a Note to a Job
+POST {{JobTrackerAPI_HostAddress}}/api/jobs/1/notes
+Content-Type: application/json
+
+{
+  "noteText": "Completed first-round technical screen with the hiring manager."
+}
+
+### 9. Get Notes for a Job
+GET {{JobTrackerAPI_HostAddress}}/api/jobs/1/notes
+Accept: application/json
+
+### 10. Update a Note
+PUT {{JobTrackerAPI_HostAddress}}/api/notes/1
+Content-Type: application/json
+
+{
+  "noteText": "Completed first-round technical screen. Feedback was positive; moving to system design round."
+}
+
+### 11. Delete a Note
+DELETE {{JobTrackerAPI_HostAddress}}/api/notes/1
+
+### 12. Delete a Job
+DELETE {{JobTrackerAPI_HostAddress}}/api/jobs/1

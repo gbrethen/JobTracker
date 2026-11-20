@@ -1,0 +1,159 @@
+<aside class="job-notes-panel">
+  <!-- Empty State when no job is selected -->
+  <div *ngIf="!jobService.selectedJob()" class="no-selection-state">
+    <div class="no-sel-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0b1dd1" stroke-width="1.8">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+    </div>
+    <h3>No Job Selected</h3>
+    <p>Select any application from the list to view timeline notes, log interviews, and update details.</p>
+  </div>
+
+  <!-- Content when job is selected -->
+  <div *ngIf="jobService.selectedJob() as job" class="notes-content-wrap">
+    
+    <!-- Top Header matching Screenshot 2's Right Column Header -->
+    <header class="notes-header">
+      <div class="header-job-info">
+        <h3 class="notes-job-title">{{ job.jobTitle }}</h3>
+        <span class="notes-company-name">{{ job.company }}</span>
+      </div>
+
+      <!-- Arrow Toggle button like Screenshot 2 -->
+      <button class="panel-toggle-btn" (click)="closePanel.emit()" title="Close details">
+        &rsaquo;
+      </button>
+    </header>
+
+    <!-- Selected Job Quick Summary & Actions -->
+    <div class="selected-job-summary">
+      <div class="summary-pills">
+        <span class="summary-pill pill-status">{{ job.status }}</span>
+        <span class="summary-pill">{{ job.jobTypeName }}</span>
+        <span class="summary-pill">{{ job.jobLocationType }}</span>
+        <span class="summary-pill" *ngIf="job.salaryRange">{{ job.salaryRange }}</span>
+      </div>
+
+      <div class="job-manage-actions">
+        <button class="btn-job-action btn-edit" (click)="openEditJob.emit(job)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Edit Job
+        </button>
+        <button class="btn-job-action btn-delete" (click)="deleteSelectedJob()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Delete Job
+        </button>
+      </div>
+
+      <!-- Optional Contact / URL info -->
+      <div class="contact-url-info" *ngIf="job.contactPerson || job.contactEmail || job.jobUrl">
+        <span *ngIf="job.contactPerson" class="info-item">
+          👤 {{ job.contactPerson }}
+        </span>
+        <a *ngIf="job.contactEmail" [href]="'mailto:' + job.contactEmail" class="info-item info-link">
+          ✉️ {{ job.contactEmail }}
+        </a>
+        <a *ngIf="job.jobUrl" [href]="job.jobUrl" target="_blank" rel="noopener" class="info-item info-link">
+          🔗 Job Posting
+        </a>
+      </div>
+    </div>
+
+    <!-- Notes Section Title -->
+    <div class="notes-timeline-title">
+      <span>ACTIVITY & NOTES</span>
+      <span class="notes-badge">{{ jobService.selectedJobNotes().length }}</span>
+    </div>
+
+    <!-- Notes Timeline / Cards List matching Screenshot 2 right-side layout -->
+    <div class="notes-scrollable">
+      <div *ngIf="jobService.selectedJobNotes().length === 0" class="empty-notes">
+        <p>No notes logged yet. Add your first interview note or feedback below!</p>
+      </div>
+
+      <div class="timeline-container" *ngIf="jobService.selectedJobNotes().length > 0">
+        <div 
+          *ngFor="let note of jobService.selectedJobNotes(); let i = index" 
+          class="timeline-item">
+          
+          <!-- Timeline Indicator Dot matching Screenshot 2 circles -->
+          <div class="timeline-dot" [style.background-color]="getDotColor(i)"></div>
+
+          <!-- Note Content Card -->
+          <div class="note-card">
+            <div class="note-card-header">
+              <span class="note-date">{{ formatDateTime(note.createdAt) }}</span>
+
+              <div class="note-actions">
+                <button 
+                  *ngIf="editingNoteId !== note.jobNoteId"
+                  class="note-btn note-btn-edit" 
+                  (click)="startEditNote(note)" 
+                  title="Edit Note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button 
+                  class="note-btn note-btn-delete" 
+                  (click)="deleteNote(note.jobNoteId)" 
+                  title="Delete Note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Note Text View or In-place Editor -->
+            <div *ngIf="editingNoteId !== note.jobNoteId" class="note-text-body">
+              {{ note.noteText }}
+            </div>
+
+            <div *ngIf="editingNoteId === note.jobNoteId" class="note-edit-area">
+              <textarea [(ngModel)]="editingNoteText" rows="3"></textarea>
+              <div class="note-edit-buttons">
+                <button class="btn-cancel" (click)="cancelEditNote()">Cancel</button>
+                <button class="btn-save" (click)="saveEditNote(note)">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Add Note Form with Action Button matching Screenshot 2 "Remove/Action" button style in #0b1dd1 -->
+    <div class="add-note-footer">
+      <div class="add-note-input-wrap">
+        <textarea 
+          placeholder="Add follow-up notes, interview details, or questions..." 
+          [(ngModel)]="newNoteText"
+          (keydown.control.enter)="onAddNote()"
+          rows="2"></textarea>
+      </div>
+      <div class="footer-buttons-row">
+        <span class="ctrl-enter-tip">Press Ctrl + Enter to save</span>
+        <button 
+          class="btn-submit-note" 
+          [disabled]="!newNoteText.trim()"
+          (click)="onAddNote()">
+          + Note
+        </button>
+      </div>
+    </div>
+
+  </div>
+</aside>

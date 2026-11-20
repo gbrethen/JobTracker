@@ -1,0 +1,168 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-titles">
+        <h3 class="modal-title">{{ isEdit ? 'Update Job Application' : 'Add New Job Application' }}</h3>
+        <span class="modal-subtitle">{{ isEdit ? 'Modify details for this opportunity' : 'Log a new opportunity in your tracker' }}</span>
+      </div>
+      <button class="btn-close" (click)="close.emit()">&times;</button>
+    </div>
+
+    <!-- Modal Form -->
+    <form [formGroup]="jobForm" (ngSubmit)="onSubmit()" class="modal-form">
+      <div class="form-grid">
+        
+        <!-- Company Name -->
+        <div class="form-group">
+          <label for="company">Company <span class="req">*</span></label>
+          <input 
+            id="company" 
+            type="text" 
+            placeholder="e.g. Google, Microsoft, Contoso" 
+            formControlName="company"
+            [class.is-invalid]="jobForm.get('company')?.invalid && jobForm.get('company')?.touched" />
+          <span class="field-error" *ngIf="jobForm.get('company')?.invalid && jobForm.get('company')?.touched">
+            Company is required.
+          </span>
+        </div>
+
+        <!-- Job Title -->
+        <div class="form-group">
+          <label for="jobTitle">Job Title <span class="req">*</span></label>
+          <input 
+            id="jobTitle" 
+            type="text" 
+            placeholder="e.g. Senior .NET Developer" 
+            formControlName="jobTitle"
+            [class.is-invalid]="jobForm.get('jobTitle')?.invalid && jobForm.get('jobTitle')?.touched" />
+          <span class="field-error" *ngIf="jobForm.get('jobTitle')?.invalid && jobForm.get('jobTitle')?.touched">
+            Job Title is required.
+          </span>
+        </div>
+
+        <!-- Job Type (Populated dynamically from API) -->
+        <div class="form-group">
+          <label for="jobTypeId">Job Type <span class="req">*</span></label>
+          <select id="jobTypeId" formControlName="jobTypeId">
+            <option [ngValue]="null" disabled selected *ngIf="jobService.jobTypes().length === 0">
+              Loading job types from API...
+            </option>
+            <option *ngFor="let t of jobService.jobTypes()" [ngValue]="t.jobTypeId">
+              {{ t.typeName }}
+            </option>
+          </select>
+          <span class="field-error" *ngIf="jobForm.get('jobTypeId')?.invalid && jobForm.get('jobTypeId')?.touched">
+            Job Type is required.
+          </span>
+        </div>
+
+        <!-- Job Location (Populated dynamically from API) -->
+        <div class="form-group">
+          <label for="jobLocationId">Job Location <span class="req">*</span></label>
+          <select id="jobLocationId" formControlName="jobLocationId">
+            <option [ngValue]="null" disabled selected *ngIf="jobService.jobLocations().length === 0">
+              Loading locations from API...
+            </option>
+            <option *ngFor="let l of jobService.jobLocations()" [ngValue]="l.jobLocationId">
+              {{ l.locationType }}
+            </option>
+          </select>
+          <span class="field-error" *ngIf="jobForm.get('jobLocationId')?.invalid && jobForm.get('jobLocationId')?.touched">
+            Job Location is required.
+          </span>
+        </div>
+
+        <!-- Physical Location -->
+        <div class="form-group">
+          <label for="physicalLocation">Office / City Location</label>
+          <input 
+            id="physicalLocation" 
+            type="text" 
+            placeholder="e.g. Dallas, TX or Austin, TX" 
+            formControlName="physicalLocation" />
+        </div>
+
+        <!-- Application Date -->
+        <div class="form-group">
+          <label for="applicationDate">Application Date <span class="req">*</span></label>
+          <input 
+            id="applicationDate" 
+            type="date" 
+            formControlName="applicationDate" />
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label for="status">Application Status <span class="req">*</span></label>
+          <select id="status" formControlName="status">
+            <option *ngFor="let s of statusOptions" [value]="s">
+              {{ s }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Salary Range -->
+        <div class="form-group">
+          <label for="salaryRange">Salary / Compensation</label>
+          <input 
+            id="salaryRange" 
+            type="text" 
+            placeholder="e.g. $130,000 - $150,000" 
+            formControlName="salaryRange" />
+        </div>
+
+        <!-- Job Posting URL -->
+        <div class="form-group full-width">
+          <label for="jobUrl">Job Posting URL</label>
+          <input 
+            id="jobUrl" 
+            type="url" 
+            placeholder="https://..." 
+            formControlName="jobUrl" />
+        </div>
+
+        <!-- Contact Person -->
+        <div class="form-group">
+          <label for="contactPerson">Recruiter / Contact Name</label>
+          <input 
+            id="contactPerson" 
+            type="text" 
+            placeholder="e.g. Jane Doe" 
+            formControlName="contactPerson" />
+        </div>
+
+        <!-- Contact Email -->
+        <div class="form-group">
+          <label for="contactEmail">Contact Email</label>
+          <input 
+            id="contactEmail" 
+            type="email" 
+            placeholder="e.g. jane.doe@company.com" 
+            formControlName="contactEmail" />
+        </div>
+
+        <!-- Initial Note (only for new jobs) -->
+        <div class="form-group full-width" *ngIf="!isEdit">
+          <label for="initialNote">Initial Note</label>
+          <textarea 
+            id="initialNote" 
+            rows="3" 
+            placeholder="Referral details, initial impressions, key requirements..." 
+            formControlName="initialNote"></textarea>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="close.emit()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Create Application') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

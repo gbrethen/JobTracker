@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobTracker</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #f1f4fb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+      color: #1e293b;
+    }
+
+    /* 3-Panel Main Shell matching Screenshot 2 */
+    .dashboard-shell {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      max-width: 1400px;
+      height: 92vh;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px -5px rgba(11, 29, 209, 0.12), 0 8px 15px -6px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    /* LEFT PANEL: 20% width (#0b1dd1 with white text) */
+    .sidebar-panel {
+      width: 20%;
+      min-width: 0;
+      flex: 0 0 20%;
+      background-color: #0b1dd1;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      box-shadow: 2px 0 10px rgba(11, 29, 209, 0.15);
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 20px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .header-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .app-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+    }
+
+    .app-year {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 2px;
+    }
+
+    .nav-arrow {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-arrow:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .sidebar-scrollable {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 10px 20px;
+    }
+
+    .nav-section {
+      margin-bottom: 20px;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: rgba(255, 255, 255, 0.55);
+      padding: 8px 12px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      margin-bottom: 2px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.88);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .nav-item.active {
+      background-color: #061280;
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: inset 3px 0 0 #ffffff;
+    }
+
+    .item-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .item-count {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .nav-item.active .item-count {
+      color: #ffffff;
+    }
+
+    .item-badge-plus {
+      background: #ffffff;
+      color: #0b1dd1;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      line-height: 1;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-applied { background-color: #6ee7b7; }
+    .dot-interviewing { background-color: #fca5a5; }
+    .dot-offered { background-color: #fde047; }
+    .dot-rejected { background-color: #cbd5e1; }
+
+    /* CENTER PANEL: 60% width */
+    .job-list-panel {
+      width: 60%;
+      min-width: 0;
+      flex: 0 0 60%;
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .center-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      background-color: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+      gap: 16px;
+    }
+
+    .view-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0b1dd1;
+      letter-spacing: 0.5px;
+    }
+
+    .view-subtitle {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 380px;
+      display: flex;
+      align-items: center;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 12px;
+      transition: all 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: #0b1dd1;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(11, 29, 209, 0.08);
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.88rem;
+      color: #1e293b;
+      margin-left: 8px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background-color: #f1f5f9;
+      color: #0b1dd1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+    }
+
+    .add-job-button {
+      width: 38px;
+      height: 38px;
+      background-color: #0b1dd1;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(11, 29, 209, 0.25);
+    }
+
+    .add-job-button:hover {
+      background-color: #08169e;
+      transform: translateY(-1px);
+    }
+
+    .jobs-scrollable {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .job-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      border: 1.5px solid #edf2f7;
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .job-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(11, 29, 209, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .job-card.selected {
+      border-color: #0b1dd1;
+      background-color: #f7f9ff;
+      box-shadow: 0 4px 14px rgba(11, 29, 209, 0.12);
+    }
+
+    .job-card.selected::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      background-color: #0b1dd1;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .card-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .job-role {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .company-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #0b1dd1;
+      margin-top: 1px;
+    }
+
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .status-applied { background-color: #d1fae5; color: #065f46; }
+    .status-interviewing { background-color: #fee2e2; color: #991b1b; }
+    .status-offered { background-color: #fef08a; color: #854d0e; }
+    .status-rejected { background-color: #f1f5f9; color: #475569; }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .meta-tag {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background-color: #f1f5f9;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .salary-tag {
+      background-color: #eff6ff;
+      color: #0b1dd1;
+      font-weight: 600;
+    }
+
+    .card-footer-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .notes-count-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.75rem;
+    }
+
+    .notes-count-pill.has-notes {
+      background-color: #eef2ff;
+      border-color: #c7d2fe;
+      color: #0b1dd1;
+      font-weight: 600;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 16px;
+    }
+
+    .action-btn {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #ffffff;
+      color: #0b1dd1;
+      border-color: #0b1dd1;
+    }
+
+    .action-btn.delete-btn:hover {
+      background: #fef2f2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+
+    /* RIGHT PANEL: 20% width (Scrollable Height) */
+    .job-notes-panel {
+      width: 20%;
+      min-width: 0;
+      flex: 0 0 20%;
+      background-color: #fbfcfe;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 100%;
+    }
+
+    .job-notes-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+    .job-notes-panel::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .notes-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      background-color: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .notes-job-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .notes-company-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #0b1dd1;
+      margin-top: 2px;
+    }
+
+    .panel-toggle-btn {
+      width: 32px;
+      height: 32px;
+      background-color: #0b1dd1;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .selected-job-summary {
+      padding: 12px 22px;
+      background-color: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .summary-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .summary-pill {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      background-color: #f1f5f9;
+      color: #475569;
+      border-radius: 6px;
+    }
+
+    .summary-pill.pill-status {
+      background-color: #e0e7ff;
+      color: #0b1dd1;
+    }
+
+    .job-manage-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-job-action {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+      background-color: #ffffff;
+      color: #334155;
+      transition: all 0.18s;
+    }
+
+    .btn-job-action:hover {
+      border-color: #0b1dd1;
+      color: #0b1dd1;
+    }
+
+    .notes-timeline-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+      color: #94a3b8;
+    }
+
+    .notes-scrollable {
+      flex: 1 0 auto;
+      overflow: visible;
+      padding: 10px 20px;
+    }
+
+    .timeline-container {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .timeline-container::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 10px;
+      bottom: 10px;
+      width: 2px;
+      background-color: #f1f5f9;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .timeline-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+      z-index: 1;
+      box-shadow: 0 0 0 3px #ffffff;
+    }
+
+    .note-card {
+      flex: 1;
+      background-color: #ffffff;
+      border: 1px solid #eef2f6;
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .note-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .note-date {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .note-text-body {
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: #334155;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .add-note-footer {
+      padding: 14px 20px 18px;
+      background-color: #ffffff;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .add-note-footer textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+    }
+
+    .add-note-footer textarea:focus {
+      border-color: #0b1dd1;
+    }
+
+    .btn-submit-note {
+      background-color: #0b1dd1;
+      color: #ffffff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      align-self: flex-end;
+      box-shadow: 0 2px 6px rgba(11, 29, 209, 0.2);
+    }
+
+    .btn-submit-note:hover {
+      background-color: #08169e;
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(15, 23, 42, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-card {
+      background-color: #ffffff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0b1dd1;
+    }
+
+    .modal-form-grid {
+      padding: 24px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: #0b1dd1;
+      box-shadow: 0 0 0 3px rgba(11, 29, 209, 0.08);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      background-color: #f8fafc;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #0b1dd1;
+      color: #ffffff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      body { padding: 0; }
+      .dashboard-shell { height: 100vh; border-radius: 0; flex-direction: column; }
+      .sidebar-panel { width: 100%; height: auto; }
+      .job-notes-panel { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-shell">
+    
+    <!-- LEFT PANEL: Navigation -->
+    <aside class="sidebar-panel">
+      <div class="sidebar-header">
+        <button class="nav-arrow">&lsaquo;</button>
+        <div class="header-brand">
+          <span class="app-title">JobTracker</span>
+          <span class="app-year">2026</span>
+        </div>
+        <button class="nav-arrow">&rsaquo;</button>
+      </div>
+
+      <div class="sidebar-scrollable">
+        <div class="nav-section">
+          <div class="section-label">MAIN NAVIGATION</div>
+          <div class="nav-item active" id="nav-all" onclick="filterJobs('all')">
+            <span class="item-name">All Jobs</span>
+            <span class="item-count" id="count-all">0</span>
+          </div>
+          <div class="nav-item" onclick="openCreateModal()">
+            <span class="item-name">Add New Job</span>
+            <span class="item-badge-plus">+</span>
+          </div>
+          <div class="nav-item" onclick="document.getElementById('searchInput').focus()">
+            <span class="item-name">Search Jobs</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-label">APPLICATION STATUS</div>
+          <div class="nav-item" onclick="filterJobs('Applied', 'status')">
+            <span class="item-name"><span class="status-dot dot-applied"></span>Applied</span>
+            <span class="item-count" id="count-applied">0</span>
+          </div>
+          <div class="nav-item" onclick="filterJobs('Interviewing', 'status')">
+            <span class="item-name"><span class="status-dot dot-interviewing"></span>Interviewing</span>
+            <span class="item-count" id="count-interviewing">0</span>
+          </div>
+          <div class="nav-item" onclick="filterJobs('Offered', 'status')">
+            <span class="item-name"><span class="status-dot dot-offered"></span>Offered</span>
+            <span class="item-count" id="count-offered">0</span>
+          </div>
+          <div class="nav-item" onclick="filterJobs('Rejected', 'status')">
+            <span class="item-name"><span class="status-dot dot-rejected"></span>Rejected</span>
+            <span class="item-count" id="count-rejected">0</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-label">WORK ARRANGEMENT</div>
+          <div class="nav-item" onclick="filterJobs('Remote', 'location')">
+            <span class="item-name">Remote</span>
+            <span class="item-count" id="count-remote">0</span>
+          </div>
+          <div class="nav-item" onclick="filterJobs('Hybrid', 'location')">
+            <span class="item-name">Hybrid</span>
+            <span class="item-count" id="count-hybrid">0</span>
+          </div>
+          <div class="nav-item" onclick="filterJobs('On-Site', 'location')">
+            <span class="item-name">On-Site</span>
+            <span class="item-count" id="count-onsite">0</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANEL: Jobs List -->
+    <main class="job-list-panel">
+      <header class="center-topbar">
+        <div>
+          <h2 class="view-title" id="viewTitle">ALL JOBS</h2>
+          <span class="view-subtitle" id="viewSubtitle">Loading applications...</span>
+        </div>
+
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search jobs, company, role..." oninput="handleSearch(this.value)">
+        </div>
+
+        <div class="topbar-right">
+          <div class="avatar-box" title="Profile">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <button class="add-job-button" onclick="openCreateModal()" title="Add New Job">+</button>
+        </div>
+      </header>
+
+      <div class="jobs-scrollable" id="jobsListContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL: Job Notes Timeline -->
+    <aside class="job-notes-panel" id="notesPanel">
+      <div id="notesPanelEmpty" style="padding: 40px; text-align: center; color: #64748b; margin-top: 60px;">
+        <h3>No Job Selected</h3>
+        <p style="margin-top: 8px; font-size: 0.88rem;">Select any job from the list to view notes, add interview logs, and update status.</p>
+      </div>
+
+      <div id="notesPanelContent" style="display: none; min-height: 100%; width: 100%; flex-direction: column;">
+        <header class="notes-header">
+          <div>
+            <h3 class="notes-job-title" id="detailJobTitle">Job Title</h3>
+            <span class="notes-company-name" id="detailCompany">Company</span>
+          </div>
+          <button class="panel-toggle-btn" onclick="clearSelectedJob()">&rsaquo;</button>
+        </header>
+
+        <div class="selected-job-summary">
+          <div class="summary-pills" id="detailPills"></div>
+          <div class="job-manage-actions">
+            <button class="btn-job-action" onclick="openEditModal()">Edit Job</button>
+            <button class="btn-job-action" style="color: #dc2626;" onclick="deleteCurrentJob()">Delete Job</button>
+          </div>
+        </div>
+
+        <div class="notes-timeline-title">
+          <span>ACTIVITY & NOTES</span>
+          <span class="item-count" id="detailNotesBadge">0</span>
+        </div>
+
+        <div class="notes-scrollable">
+          <div class="timeline-container" id="timelineList"></div>
+        </div>
+
+        <div class="add-note-footer">
+          <textarea id="newNoteInput" rows="2" placeholder="Add follow-up notes, interview details..."></textarea>
+          <button class="btn-submit-note" onclick="submitNewNote()">+ Add Note</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- MODAL: Create / Edit Job -->
+  <div class="modal-backdrop" id="jobModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="modalHeading">Add New Job</h3>
+        </div>
+        <button style="border:none;background:transparent;font-size:1.5rem;cursor:pointer;" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="jobForm" onsubmit="handleFormSubmit(event)">
+        <div class="modal-form-grid">
+          <div class="form-group">
+            <label>Company *</label>
+            <input type="text" id="formCompany" required placeholder="e.g. Contoso Tech">
+          </div>
+          <div class="form-group">
+            <label>Job Title *</label>
+            <input type="text" id="formJobTitle" required placeholder="e.g. Senior .NET Developer">
+          </div>
+          <div class="form-group">
+            <label>Job Type *</label>
+            <select id="formJobTypeId">
+              <option value="" disabled selected>Loading job types from API...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Location *</label>
+            <select id="formJobLocationId">
+              <option value="" disabled selected>Loading locations from API...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>City / Office Location</label>
+            <input type="text" id="formPhysicalLocation" placeholder="e.g. Austin, TX">
+          </div>
+          <div class="form-group">
+            <label>Application Date *</label>
+            <input type="date" id="formAppDate" required>
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="formStatus">
+              <option value="Applied">Applied</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Offered">Offered</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Withdrawn">Withdrawn</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Salary Range</label>
+            <input type="text" id="formSalary" placeholder="e.g. $140,000 - $160,000">
+          </div>
+          <div class="form-group full-width">
+            <label>Job URL</label>
+            <input type="url" id="formJobUrl" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label>Contact Person</label>
+            <input type="text" id="formContactPerson" placeholder="Jane Recruiter">
+          </div>
+          <div class="form-group">
+            <label>Contact Email</label>
+            <input type="email" id="formContactEmail" placeholder="jane@company.com">
+          </div>
+          <div class="form-group full-width" id="initialNoteGroup">
+            <label>Initial Note</label>
+            <textarea id="formInitialNote" rows="2" placeholder="Notes on application, referral, requirements..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary" id="modalSubmitBtn">Create Application</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5151/api';
+    let allJobs = [];
+    let allJobTypes = [];
+    let allJobLocations = [];
+    let currentFilter = 'all';
+    let selectedJobId = null;
+    let isEditing = false;
+    const dotColors = ['#5eead4', '#fca5a5', '#c4b5fd', '#fde047', '#93c5fd', '#f472b6'];
+
+    async function loadJobTypes() {
+      try {
+        const res = await fetch(`${API_URL}/jobtypes`);
+        if (!res.ok) throw new Error('Failed to load job types');
+        allJobTypes = await res.json();
+        const select = document.getElementById('formJobTypeId');
+        if (allJobTypes.length > 0) {
+          select.innerHTML = allJobTypes.map(t => `<option value="${t.jobTypeId}">${escapeHtml(t.typeName)}</option>`).join('');
+        }
+      } catch (err) {
+        console.error('Error loading job types:', err);
+      }
+    }
+
+    async function loadJobLocations() {
+      try {
+        const res = await fetch(`${API_URL}/joblocations`);
+        if (!res.ok) throw new Error('Failed to load job locations');
+        allJobLocations = await res.json();
+        const select = document.getElementById('formJobLocationId');
+        if (allJobLocations.length > 0) {
+          select.innerHTML = allJobLocations.map(l => `<option value="${l.jobLocationId}">${escapeHtml(l.locationType)}</option>`).join('');
+        }
+      } catch (err) {
+        console.error('Error loading job locations:', err);
+      }
+    }
+
+    async function loadJobs() {
+      try {
+        const res = await fetch(`${API_URL}/jobs`);
+        if (!res.ok) throw new Error('API request failed');
+        allJobs = await res.json();
+        updateCounts();
+        renderJobs();
+      } catch (err) {
+        document.getElementById('viewSubtitle').innerText = 'API Offline or Connecting to http://localhost:5151...';
+        document.getElementById('jobsListContainer').innerHTML = `
+          <div style="padding: 40px; text-align: center; color: #64748b;">
+            <p style="font-weight: 600; color: #0b1dd1; font-size: 1.1rem;">Waiting for JobTracking API</p>
+            <p style="margin-top: 8px;">Ensure API is running on <code>http://localhost:5151</code> (<code>dotnet run --project JobTrackerAPI</code>)</p>
+          </div>`;
+      }
+    }
+
+    function updateCounts() {
+      document.getElementById('count-all').innerText = allJobs.length;
+      document.getElementById('count-applied').innerText = allJobs.filter(j => j.status === 'Applied').length;
+      document.getElementById('count-interviewing').innerText = allJobs.filter(j => j.status === 'Interviewing').length;
+      document.getElementById('count-offered').innerText = allJobs.filter(j => j.status === 'Offered').length;
+      document.getElementById('count-rejected').innerText = allJobs.filter(j => j.status === 'Rejected').length;
+      document.getElementById('count-remote').innerText = allJobs.filter(j => j.jobLocationType === 'Remote').length;
+      document.getElementById('count-hybrid').innerText = allJobs.filter(j => j.jobLocationType === 'Hybrid').length;
+      document.getElementById('count-onsite').innerText = allJobs.filter(j => j.jobLocationType === 'On-Site').length;
+    }
+
+    function renderJobs() {
+      const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      let filtered = allJobs;
+
+      if (currentFilter !== 'all') {
+        filtered = filtered.filter(j => 
+          j.status.toLowerCase() === currentFilter.toLowerCase() || 
+          j.jobLocationType.toLowerCase() === currentFilter.toLowerCase() ||
+          j.jobTypeName.toLowerCase() === currentFilter.toLowerCase()
+        );
+      }
+
+      if (query) {
+        filtered = filtered.filter(j => 
+          j.company.toLowerCase().includes(query) || 
+          j.jobTitle.toLowerCase().includes(query)
+        );
+      }
+
+      document.getElementById('viewSubtitle').innerText = `${filtered.length} Applications Recorded`;
+
+      if (filtered.length === 0) {
+        document.getElementById('jobsListContainer').innerHTML = `
+          <div style="padding: 40px; text-align: center; color: #64748b;">
+            <p style="font-weight: 600; font-size: 1.1rem; color: #0f172a;">No applications found</p>
+            <p style="margin-top: 6px;">Click '+' above to record a new job opportunity.</p>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('jobsListContainer').innerHTML = filtered.map(job => `
+        <div class="job-card ${selectedJobId === job.jobId ? 'selected' : ''}" onclick="selectJob(${job.jobId})">
+          <div class="card-main">
+            <div class="card-header-row">
+              <div>
+                <h3 class="job-role">${escapeHtml(job.jobTitle)}</h3>
+                <span class="company-name">${escapeHtml(job.company)}</span>
+              </div>
+              <span class="status-badge status-${job.status.toLowerCase()}">${job.status}</span>
+            </div>
+            <div class="card-meta-row">
+              <span class="meta-tag">${job.jobTypeName}</span>
+              <span class="meta-tag">${job.jobLocationType}${job.physicalLocation ? ' &bull; ' + escapeHtml(job.physicalLocation) : ''}</span>
+              ${job.salaryRange ? `<span class="meta-tag salary-tag">${escapeHtml(job.salaryRange)}</span>` : ''}
+            </div>
+            <div class="card-footer-row">
+              <span>Applied: <strong>${job.applicationDate}</strong></span>
+              <span class="notes-count-pill ${job.notesCount > 0 ? 'has-notes' : ''}">
+                ${job.notesCount} ${job.notesCount === 1 ? 'note' : 'notes'}
+              </span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="action-btn" title="Edit Job" onclick="event.stopPropagation(); openEditModalFor(${job.jobId})">✎</button>
+            <button class="action-btn delete-btn" title="Delete Job" onclick="event.stopPropagation(); deleteJob(${job.jobId})">🗑</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function selectJob(id) {
+      selectedJobId = id;
+      renderJobs();
+
+      try {
+        const res = await fetch(`${API_URL}/jobs/${id}`);
+        if (!res.ok) throw new Error();
+        const job = await res.json();
+
+        document.getElementById('notesPanelEmpty').style.display = 'none';
+        document.getElementById('notesPanelContent').style.display = 'flex';
+        document.getElementById('detailJobTitle').innerText = job.jobTitle;
+        document.getElementById('detailCompany').innerText = job.company;
+
+        document.getElementById('detailPills').innerHTML = `
+          <span class="summary-pill pill-status">${job.status}</span>
+          <span class="summary-pill">${job.jobTypeName}</span>
+          <span class="summary-pill">${job.jobLocationType}</span>
+          ${job.salaryRange ? `<span class="summary-pill">${escapeHtml(job.salaryRange)}</span>` : ''}
+        `;
+
+        const notes = job.notes || [];
+        document.getElementById('detailNotesBadge').innerText = notes.length;
+
+        if (notes.length === 0) {
+          document.getElementById('timelineList').innerHTML = `<p style="padding: 20px; color: #94a3b8; font-size: 0.85rem; text-align: center;">No notes logged yet. Add your first note below!</p>`;
+        } else {
+          document.getElementById('timelineList').innerHTML = notes.map((n, i) => `
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background-color: ${dotColors[i % dotColors.length]}"></div>
+              <div class="note-card">
+                <div class="note-card-header">
+                  <span class="note-date">${new Date(n.createdAt).toLocaleString()}</span>
+                  <button style="border:none;background:transparent;cursor:pointer;color:#94a3b8;" onclick="deleteNote(${n.jobNoteId})">🗑</button>
+                </div>
+                <div class="note-text-body">${escapeHtml(n.noteText)}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function clearSelectedJob() {
+      selectedJobId = null;
+      document.getElementById('notesPanelEmpty').style.display = 'block';
+      document.getElementById('notesPanelContent').style.display = 'none';
+      renderJobs();
+    }
+
+    async function submitNewNote() {
+      const text = document.getElementById('newNoteInput').value.trim();
+      if (!text || !selectedJobId) return;
+
+      await fetch(`${API_URL}/jobs/${selectedJobId}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ noteText: text })
+      });
+
+      document.getElementById('newNoteInput').value = '';
+      selectJob(selectedJobId);
+      loadJobs();
+    }
+
+    async function deleteNote(noteId) {
+      if (!confirm('Delete this note?')) return;
+      await fetch(`${API_URL}/notes/${noteId}`, { method: 'DELETE' });
+      selectJob(selectedJobId);
+      loadJobs();
+    }
+
+    async function deleteJob(id) {
+      if (!confirm('Are you sure you want to delete this job application?')) return;
+      await fetch(`${API_URL}/jobs/${id}`, { method: 'DELETE' });
+      if (selectedJobId === id) clearSelectedJob();
+      loadJobs();
+    }
+
+    function deleteCurrentJob() {
+      if (selectedJobId) deleteJob(selectedJobId);
+    }
+
+    async function openCreateModal() {
+      isEditing = false;
+      document.getElementById('modalHeading').innerText = 'Add New Job Application';
+      document.getElementById('modalSubmitBtn').innerText = 'Create Application';
+      document.getElementById('initialNoteGroup').style.display = 'flex';
+      document.getElementById('jobForm').reset();
+      document.getElementById('formAppDate').value = new Date().toISOString().substring(0, 10);
+
+      // Ensure JobType and JobLocation dropdowns are populated from the API
+      if (allJobTypes.length === 0) await loadJobTypes();
+      if (allJobLocations.length === 0) await loadJobLocations();
+
+      if (allJobTypes.length > 0) {
+        document.getElementById('formJobTypeId').value = allJobTypes[0].jobTypeId;
+      }
+      if (allJobLocations.length > 0) {
+        document.getElementById('formJobLocationId').value = allJobLocations[0].jobLocationId;
+      }
+
+      document.getElementById('jobModal').style.display = 'flex';
+    }
+
+    function openEditModal() {
+      if (selectedJobId) openEditModalFor(selectedJobId);
+    }
+
+    async function openEditModalFor(id) {
+      const job = allJobs.find(j => j.jobId === id);
+      if (!job) return;
+
+      isEditing = true;
+      selectedJobId = id;
+      document.getElementById('modalHeading').innerText = 'Update Job Application';
+      document.getElementById('modalSubmitBtn').innerText = 'Save Changes';
+      document.getElementById('initialNoteGroup').style.display = 'none';
+
+      // Ensure JobType and JobLocation dropdowns are populated from the API
+      if (allJobTypes.length === 0) await loadJobTypes();
+      if (allJobLocations.length === 0) await loadJobLocations();
+
+      document.getElementById('formCompany').value = job.company;
+      document.getElementById('formJobTitle').value = job.jobTitle;
+      document.getElementById('formJobTypeId').value = job.jobTypeId;
+      document.getElementById('formJobLocationId').value = job.jobLocationId;
+      document.getElementById('formPhysicalLocation').value = job.physicalLocation || '';
+      document.getElementById('formAppDate').value = job.applicationDate;
+      document.getElementById('formStatus').value = job.status;
+      document.getElementById('formSalary').value = job.salaryRange || '';
+      document.getElementById('formJobUrl').value = job.jobUrl || '';
+      document.getElementById('formContactPerson').value = job.contactPerson || '';
+      document.getElementById('formContactEmail').value = job.contactEmail || '';
+
+      document.getElementById('jobModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('jobModal').style.display = 'none';
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        company: document.getElementById('formCompany').value.trim(),
+        jobTitle: document.getElementById('formJobTitle').value.trim(),
+        jobTypeId: parseInt(document.getElementById('formJobTypeId').value),
+        jobLocationId: parseInt(document.getElementById('formJobLocationId').value),
+        physicalLocation: document.getElementById('formPhysicalLocation').value.trim() || null,
+        applicationDate: document.getElementById('formAppDate').value,
+        status: document.getElementById('formStatus').value,
+        salaryRange: document.getElementById('formSalary').value.trim() || null,
+        jobUrl: document.getElementById('formJobUrl').value.trim() || null,
+        contactPerson: document.getElementById('formContactPerson').value.trim() || null,
+        contactEmail: document.getElementById('formContactEmail').value.trim() || null
+      };
+
+      if (!isEditing) {
+        payload.initialNote = document.getElementById('formInitialNote').value.trim() || null;
+        const res = await fetch(`${API_URL}/jobs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const created = await res.json();
+        closeModal();
+        await loadJobs();
+        selectJob(created.jobId);
+      } else {
+        await fetch(`${API_URL}/jobs/${selectedJobId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        closeModal();
+        await loadJobs();
+        selectJob(selectedJobId);
+      }
+    }
+
+    function filterJobs(filterKey, type) {
+      currentFilter = filterKey;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById('viewTitle').innerText = filterKey.toUpperCase();
+      renderJobs();
+    }
+
+    function handleSearch() {
+      renderJobs();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Initialize on load from API
+    loadJobTypes();
+    loadJobLocations();
+    loadJobs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+/* Viewport background matching the clean aesthetic of Screenshot 2 */
+.app-viewport {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f4fb;
+  box-sizing: border-box;
+  padding: 24px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 3-Panel Main Container Shell like Screenshot 2 */
+.dashboard-shell {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1400px;
+  height: 92vh;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 15px 35px -5px rgba(11, 29, 209, 0.12), 0 8px 15px -6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 3 Panels Flex Configuration: 20% - 60% - 20% */
+.panel-left {
+  display: flex;
+  flex: 0 0 20%;
+  width: 20%;
+  min-width: 0;
+  height: 100%;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.panel-center {
+  display: flex;
+  flex: 0 0 55%;
+  width: 55%;
+  min-width: 0;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.panel-right {
+  display: flex;
+  flex: 0 0 25%;
+  width: 25%;
+  min-width: 0;
+  height: 100%;
+  z-index: 2;
+  overflow: hidden;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1150px) {
+  .app-viewport {
+    padding: 10px;
+  }
+  .dashboard-shell {
+    height: 98vh;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-viewport {
+    padding: 0;
+  }
+  .dashboard-shell {
+    height: 100vh;
+    border-radius: 0;
+  }
+  .panel-left {
+    flex: 0 0 70px; /* Collapsed icon view on tablet */
+  }
+  .panel-left ::ng-deep .sidebar-panel {
+    width: 70px;
+    min-width: 70px;
+  }
+  .panel-left ::ng-deep .section-label,
+  .panel-left ::ng-deep .item-count,
+  .panel-left ::ng-deep .app-year,
+  .panel-left ::ng-deep .nav-arrow {
+    display: none;
+  }
+  .panel-left ::ng-deep .app-title {
+    font-size: 0.8rem;
+  }
+  .panel-left ::ng-deep .item-name {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard-shell {
+    flex-direction: column;
+  }
+  .panel-left {
+    flex: 0 0 60px;
+    height: 60px;
+    width: 100%;
+  }
+  .panel-left ::ng-deep .sidebar-panel {
+    flex-direction: row;
+    width: 100%;
+    height: 60px;
+  }
+  .panel-center {
+    flex: 1;
+    width: 100%;
+  }
+  .panel-right {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    transition: right 0.3s ease;
+  }
+  .panel-right.mobile-open {
+    right: 0;
+  }
+}

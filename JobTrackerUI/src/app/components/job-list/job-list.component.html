@@ -1,0 +1,133 @@
+<div class="job-list-panel">
+  <!-- Top Header Area Matching Screenshot 2 Structure -->
+  <header class="center-topbar">
+    <div class="topbar-left">
+      <h2 class="view-title">
+        <span *ngIf="jobService.activeFilter() === 'all'">ALL JOBS</span>
+        <span *ngIf="jobService.activeFilter() !== 'all'">{{ jobService.activeFilter() | uppercase }}</span>
+      </h2>
+      <span class="view-subtitle">{{ jobService.jobs().length }} Applications Recorded</span>
+    </div>
+
+    <!-- Search Bar in Header -->
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Search jobs, company, role..." 
+        [(ngModel)]="searchTerm" 
+        (keyup.enter)="onSearch()"
+        (input)="onSearch()" />
+      <button *ngIf="searchTerm" class="clear-btn" (click)="clearSearch()">&times;</button>
+    </div>
+
+    <!-- Right Header Elements: User Avatar & Big "+" Action Button like Screenshot 2 -->
+    <div class="topbar-right">
+      <div class="avatar-box" title="User Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <button class="add-job-button" (click)="openAddJob.emit()" title="Add New Job">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading State Indicator -->
+  <div *ngIf="jobService.isLoading()" class="loading-indicator">
+    <div class="spinner"></div>
+    <span>Loading jobs...</span>
+  </div>
+
+  <!-- Empty State when no jobs match -->
+  <div *ngIf="!jobService.isLoading() && jobService.jobs().length === 0" class="empty-state">
+    <div class="empty-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0b1dd1" stroke-width="1.8">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      </svg>
+    </div>
+    <h3>No Job Applications Found</h3>
+    <p>Track your first opportunity or try adjusting your search filters.</p>
+    <button class="btn-primary" (click)="openAddJob.emit()">
+      + Add New Job Application
+    </button>
+  </div>
+
+  <!-- Job Cards Listing -->
+  <div class="jobs-scrollable" *ngIf="!jobService.isLoading() && jobService.jobs().length > 0">
+    <div 
+      *ngFor="let job of jobService.jobs()" 
+      class="job-card" 
+      [class.selected]="jobService.selectedJob()?.jobId === job.jobId"
+      (click)="selectJob(job)">
+      
+      <!-- Card Left: Status Indicator Bar & Main Details -->
+      <div class="card-main">
+        <div class="card-header-row">
+          <div class="title-company">
+            <h3 class="job-role">{{ job.jobTitle }}</h3>
+            <span class="company-name">{{ job.company }}</span>
+          </div>
+
+          <!-- Status Badge -->
+          <span class="status-badge" [ngClass]="getStatusClass(job.status)">
+            {{ job.status }}
+          </span>
+        </div>
+
+        <!-- Badges & Metadata Row -->
+        <div class="card-meta-row">
+          <span class="meta-tag type-tag">
+            {{ job.jobTypeName }}
+          </span>
+          <span class="meta-tag location-tag">
+            {{ job.jobLocationType }}
+            <span *ngIf="job.physicalLocation">&bull; {{ job.physicalLocation }}</span>
+          </span>
+          <span class="meta-tag salary-tag" *ngIf="job.salaryRange">
+            {{ job.salaryRange }}
+          </span>
+        </div>
+
+        <div class="card-footer-row">
+          <span class="applied-date">
+            Applied: <strong>{{ formatDate(job.applicationDate) }}</strong>
+          </span>
+
+          <span class="notes-count-pill" [class.has-notes]="job.notesCount > 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            {{ job.notesCount }} {{ job.notesCount === 1 ? 'note' : 'notes' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Card Actions -->
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="onEditJob($event, job)" title="Edit Job Details">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+
+        <button class="action-btn delete-btn" (click)="onDeleteJob($event, job)" title="Delete Job">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

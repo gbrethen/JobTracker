@@ -1,0 +1,31 @@
+<main class="app-viewport">
+  <div class="dashboard-shell">
+    
+    <!-- Left Navigation Panel -->
+    <app-sidebar class="panel-left"></app-sidebar>
+
+    <!-- Center Body Panel: Job Applications List -->
+    <app-job-list 
+      class="panel-center"
+      (openAddJob)="openAddJobModal()"
+      (openEditJob)="openEditJobModal($event)">
+    </app-job-list>
+
+    <!-- Right Side Panel: Job Notes Cards -->
+    <app-job-notes 
+      class="panel-right"
+      [class.mobile-open]="showMobileNotes"
+      (openEditJob)="openEditJobModal($event)"
+      (closePanel)="closeNotesPanel()">
+    </app-job-notes>
+
+  </div>
+
+  <!-- Add / Edit Job Modal -->
+  <app-job-modal 
+    *ngIf="showModal"
+    [isEdit]="isEditMode"
+    [jobToEdit]="jobToEdit"
+    (close)="closeModal()">
+  </app-job-modal>
+</main>

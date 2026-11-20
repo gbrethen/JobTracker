@@ -1,0 +1,181 @@
+<aside class="sidebar-panel">
+  <!-- Top App Brand / Year Header -->
+  <div class="sidebar-header">
+    <button class="nav-arrow" title="Previous Year">&lsaquo;</button>
+    <div class="header-brand">
+      <span class="app-title">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="7" width="18" height="14" rx="2"></rect>
+          <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"></path>
+        </svg>
+        JobTracker
+      </span>
+      <span class="app-year">2026</span>
+    </div>
+    <button class="nav-arrow" title="Next Year">&rsaquo;</button>
+  </div>
+
+  <div class="sidebar-scrollable">
+    <!-- Primary Actions Navigation -->
+    <div class="nav-section">
+      <div class="section-label">MAIN NAVIGATION</div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'all'"
+        (click)="selectFilter('all')">
+        <span class="item-name">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          All Jobs
+        </span>
+        <span class="item-count">{{ allJobsCount() }}</span>
+      </div>
+
+      <div 
+        class="nav-item action-add" 
+        [class.active]="jobService.activeFilter() === 'add'"
+        (click)="jobService.activeFilter.set('add')">
+        <span class="item-name">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          Add New Job
+        </span>
+        <span class="item-badge-plus">+</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'search'"
+        (click)="jobService.activeFilter.set('search')">
+        <span class="item-name">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Search Jobs
+        </span>
+      </div>
+    </div>
+
+    <!-- Status Filters -->
+    <div class="nav-section">
+      <div class="section-label">APPLICATION STATUS</div>
+      
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Applied'"
+        (click)="selectFilter('Applied', 'status')">
+        <span class="item-name">
+          <span class="status-dot dot-applied"></span>
+          Applied
+        </span>
+        <span class="item-count">{{ statusCounts()['Applied'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Interviewing'"
+        (click)="selectFilter('Interviewing', 'status')">
+        <span class="item-name">
+          <span class="status-dot dot-interviewing"></span>
+          Interviewing
+        </span>
+        <span class="item-count">{{ statusCounts()['Interviewing'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Offered'"
+        (click)="selectFilter('Offered', 'status')">
+        <span class="item-name">
+          <span class="status-dot dot-offered"></span>
+          Offered
+        </span>
+        <span class="item-count">{{ statusCounts()['Offered'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Rejected'"
+        (click)="selectFilter('Rejected', 'status')">
+        <span class="item-name">
+          <span class="status-dot dot-rejected"></span>
+          Rejected
+        </span>
+        <span class="item-count">{{ statusCounts()['Rejected'] || 0 }}</span>
+      </div>
+    </div>
+
+    <!-- Location Filters -->
+    <div class="nav-section">
+      <div class="section-label">WORK ARRANGEMENT</div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Remote'"
+        (click)="selectFilter('Remote', 'location')">
+        <span class="item-name">Remote</span>
+        <span class="item-count">{{ locationCounts()['Remote'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Hybrid'"
+        (click)="selectFilter('Hybrid', 'location')">
+        <span class="item-name">Hybrid</span>
+        <span class="item-count">{{ locationCounts()['Hybrid'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'On-Site'"
+        (click)="selectFilter('On-Site', 'location')">
+        <span class="item-name">On-Site</span>
+        <span class="item-count">{{ locationCounts()['On-Site'] || 0 }}</span>
+      </div>
+    </div>
+
+    <!-- Job Type Filters -->
+    <div class="nav-section">
+      <div class="section-label">EMPLOYMENT TYPE</div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Full Time'"
+        (click)="selectFilter('Full Time', 'type')">
+        <span class="item-name">Full Time</span>
+        <span class="item-count">{{ typeCounts()['Full Time'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Part Time'"
+        (click)="selectFilter('Part Time', 'type')">
+        <span class="item-name">Part Time</span>
+        <span class="item-count">{{ typeCounts()['Part Time'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Contract'"
+        (click)="selectFilter('Contract', 'type')">
+        <span class="item-name">Contract</span>
+        <span class="item-count">{{ typeCounts()['Contract'] || 0 }}</span>
+      </div>
+
+      <div 
+        class="nav-item" 
+        [class.active]="jobService.activeFilter() === 'Temp'"
+        (click)="selectFilter('Temp', 'type')">
+        <span class="item-name">Temp</span>
+        <span class="item-count">{{ typeCounts()['Temp'] || 0 }}</span>
+      </div>
+    </div>
+  </div>
+</aside>
