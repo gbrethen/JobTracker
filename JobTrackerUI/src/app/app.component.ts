@@ -28,6 +28,7 @@ export class AppComponent implements OnInit {
   isEditMode = false;
   jobToEdit: Job | null = null;
   showMobileNotes = false;
+  jobToDelete: Job | null = null;
 
   constructor() {
     // If user clicks "Add New Job" in the sidebar, open the modal
@@ -68,6 +69,23 @@ export class AppComponent implements OnInit {
   closeModal() {
     this.showModal = false;
     this.jobToEdit = null;
+  }
+
+  requestDeleteJob(job: Job) {
+    this.jobToDelete = job;
+  }
+
+  cancelDeleteJob() {
+    this.jobToDelete = null;
+  }
+
+  confirmDeleteJob() {
+    const job = this.jobToDelete;
+    if (!job) return;
+
+    this.jobService.deleteJob(job.jobId).subscribe({
+      complete: () => this.cancelDeleteJob()
+    });
   }
 
   closeNotesPanel() {

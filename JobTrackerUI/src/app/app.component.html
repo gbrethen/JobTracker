@@ -8,7 +8,8 @@
     <app-job-list 
       class="panel-center"
       (openAddJob)="openAddJobModal()"
-      (openEditJob)="openEditJobModal($event)">
+      (openEditJob)="openEditJobModal($event)"
+      (deleteJobRequested)="requestDeleteJob($event)">
     </app-job-list>
 
     <!-- Right Side Panel: Job Notes Cards -->
@@ -16,7 +17,8 @@
       class="panel-right"
       [class.mobile-open]="showMobileNotes"
       (openEditJob)="openEditJobModal($event)"
-      (closePanel)="closeNotesPanel()">
+      (closePanel)="closeNotesPanel()"
+      (deleteJobRequested)="requestDeleteJob($event)">
     </app-job-notes>
 
   </div>
@@ -28,4 +30,15 @@
     [jobToEdit]="jobToEdit"
     (close)="closeModal()">
   </app-job-modal>
+
+  <div *ngIf="jobToDelete as job" class="confirm-backdrop" (click)="cancelDeleteJob()">
+    <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()">
+      <h2 id="delete-title">Delete job application?</h2>
+      <p>Delete <strong>{{ job.jobTitle }}</strong> at <strong>{{ job.company }}</strong>? All related notes will also be deleted.</p>
+      <div class="confirm-actions">
+        <button type="button" class="cancel-button" (click)="cancelDeleteJob()">Cancel</button>
+        <button type="button" class="confirm-delete-button" (click)="confirmDeleteJob()">Delete job</button>
+      </div>
+    </section>
+  </div>
 </main>

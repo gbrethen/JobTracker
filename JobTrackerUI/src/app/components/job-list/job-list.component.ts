@@ -16,6 +16,7 @@ export class JobListComponent {
 
   @Output() openAddJob = new EventEmitter<void>();
   @Output() openEditJob = new EventEmitter<Job>();
+  @Output() deleteJobRequested = new EventEmitter<Job>();
 
   searchTerm = '';
 
@@ -41,9 +42,7 @@ export class JobListComponent {
 
   onDeleteJob(event: Event, job: Job) {
     event.stopPropagation();
-    if (confirm(`Are you sure you want to delete the application for "${job.jobTitle}" at "${job.company}"? All related notes will also be deleted.`)) {
-      this.jobService.deleteJob(job.jobId).subscribe();
-    }
+    this.deleteJobRequested.emit(job);
   }
 
   onAddNoteQuick(event: Event, job: Job) {

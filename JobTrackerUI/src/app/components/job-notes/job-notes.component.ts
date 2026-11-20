@@ -16,6 +16,7 @@ export class JobNotesComponent {
 
   @Output() openEditJob = new EventEmitter<Job>();
   @Output() closePanel = new EventEmitter<void>();
+  @Output() deleteJobRequested = new EventEmitter<Job>();
 
   newNoteText = '';
   editingNoteId: number | null = null;
@@ -72,9 +73,7 @@ export class JobNotesComponent {
     const job = this.jobService.selectedJob();
     if (!job) return;
 
-    if (confirm(`Delete job application "${job.jobTitle}" at "${job.company}" and all its notes?`)) {
-      this.jobService.deleteJob(job.jobId).subscribe();
-    }
+    this.deleteJobRequested.emit(job);
   }
 
   formatDateTime(isoStr: string): string {
